@@ -1,5 +1,6 @@
 package com.example.mediscreen.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,7 +53,8 @@ private val EmergencyRed = Color(0xFFD32F2F)
 
 private data class EmergencyCategory(
     val label: String,
-    val icon: CategoryIcon
+    val icon: CategoryIcon,
+    val conditionId: String? = null
 )
 
 private enum class CategoryIcon {
@@ -73,16 +75,19 @@ private val EmergencyCategories = listOf(
     EmergencyCategory("Trouble Breathing", CategoryIcon.Breathing),
     EmergencyCategory("Allergic Reaction", CategoryIcon.AllergicReaction),
     EmergencyCategory("Heat Illness", CategoryIcon.HeatIllness),
-    EmergencyCategory("Chest Pain", CategoryIcon.ChestPain),
-    EmergencyCategory("Choking", CategoryIcon.Choking),
+    EmergencyCategory("Chest Pain", CategoryIcon.ChestPain, conditionId = "heart_attack"),
+    EmergencyCategory("Choking", CategoryIcon.Choking, conditionId = "choking"),
     EmergencyCategory("Seizure", CategoryIcon.Seizure),
-    EmergencyCategory("Diabetic Emergency", CategoryIcon.DiabeticEmergency),
-    EmergencyCategory("Asthma Attack", CategoryIcon.AsthmaAttack),
-    EmergencyCategory("Poisoning/Overdose", CategoryIcon.Poisoning)
+    EmergencyCategory("Diabetic Emergency", CategoryIcon.DiabeticEmergency, conditionId = "diabetic_emergency"),
+    EmergencyCategory("Asthma Attack", CategoryIcon.AsthmaAttack, conditionId = "asthma_attack"),
+    EmergencyCategory("Poisoning/Overdose", CategoryIcon.Poisoning, conditionId = "poisoning")
 )
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    onCategorySelected: (conditionId: String) -> Unit = {}
+) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -142,7 +147,12 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 items(EmergencyCategories) { category ->
-                    CategoryCard(category = category)
+                    CategoryCard(
+                        category = category,
+                        onClick = {
+                            category.conditionId?.let(onCategorySelected)
+                        }
+                    )
                 }
             }
         }
@@ -183,11 +193,15 @@ private fun AppHeader() {
 }
 
 @Composable
-private fun CategoryCard(category: EmergencyCategory) {
+private fun CategoryCard(
+    category: EmergencyCategory,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1.18f),
+            .aspectRatio(1.18f)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = CardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
